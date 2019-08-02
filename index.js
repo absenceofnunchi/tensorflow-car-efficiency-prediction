@@ -16,4 +16,6 @@ const regression = new LinearRegression(features, labels, {
 })
 
 regression.train()
-console.log(`Updated m is ${regression.m}.  Updated b is ${regression.b}`)
+regression.weights.array().then((results) => {
+    console.log(`Updated M is ${results[1][0]}. Updated B is ${results[0][0]}`)
+})
