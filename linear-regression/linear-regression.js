@@ -17,24 +17,45 @@ class LinearRegression {
         this.weights = tf.zeros([this.features.shape[1], 1])
     }
 
-    gradientDescent() {
-        const currentGuess = this.features.matMul(this.weights)
-        const differences = currentGuess.sub(this.labels)
-        const slope = this.features
+    gradientDescent(features, labels) {
+        const currentGuess = features.matMul(this.weights)
+        const differences = currentGuess.sub(labels)
+        const slope = features
             .transpose()
             .matMul(differences)
-            .div(this.features.shape[0])
+            .div(features.shape[0])
         
         this.weights = this.weights.sub(slope.mul(this.options.learningRate))
     }   
 
     train() {
+        const batchQuantity = Math.floor(
+            this.features.shape[0] / this.options.batchSize
+        )
+
         for (let i = 0; i < this.options.iterations; i++) {
+            for (let j = 0; j < batchQuantity; j++) {
+                const startIndex = j * this.options.batchSize
+                const { batchSize } = this.options
+                const featureSlice = this.features.slice(
+                    [startIndex, 0],
+                    [batchSize, -1]
+                )
+                const labelSlice = this.labels.slice(
+                    [startIndex, 0], 
+                    [batchSize, -1]
+                )
+
+                this.gradientDescent(featureSlice, labelSlice)
+            }
             console.log(`Learning rate: ${this.options.learningRate}`)
-            this.gradientDescent()
             this.recordMSE()
             this.updateLearningRate()
         }
+    }
+
+    predict(observations) {
+        return this.processFeature(observations).matMul(this.weights)
     }
 
     test(testFeatures, testLabels) {
@@ -109,8 +130,6 @@ class LinearRegression {
 }
 
 module.exports = LinearRegression
-
-
 
 // class LinearRegression {
 //     constructor(features, labels, options) {
